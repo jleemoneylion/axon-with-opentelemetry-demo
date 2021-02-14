@@ -1,6 +1,7 @@
 package com.example.axonsample.infrastructure.axon;
 
 import org.axonframework.common.jdbc.DataSourceConnectionProvider;
+import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.tokenstore.jdbc.JdbcTokenStore;
 import org.axonframework.eventsourcing.eventstore.EmbeddedEventStore;
 import org.axonframework.eventsourcing.eventstore.EventStorageEngine;
@@ -38,6 +39,11 @@ public class AxonConfig {
                 .storageEngine(eventStorageEngine)
                 .messageMonitor(configuration.messageMonitor(EventStore.class, "eventStore"))
                 .build();
+    }
+
+    @Bean
+    public EventBus eventBus(EventStore eventStore) {
+        return eventStore;
     }
 
     @Bean
