@@ -75,4 +75,9 @@ public class OpenTelemetryConfig {
         eventProcessingConfigurer.registerDefaultHandlerInterceptor(
                 (configuration, name) -> openTelemetryHandlerInterceptor);
     }
+
+    @Bean
+    public SQSOpenTelemetry sqsOpenTelemetry(ContextPropagators contextPropagators) {
+        return new SQSOpenTelemetry(contextPropagators);
+    }
 }

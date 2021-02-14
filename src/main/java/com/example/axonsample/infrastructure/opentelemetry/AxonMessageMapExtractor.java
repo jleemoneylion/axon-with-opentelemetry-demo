@@ -3,7 +3,7 @@ package com.example.axonsample.infrastructure.opentelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import org.axonframework.messaging.Message;
 
-public class MapExtractor implements TextMapPropagator.Getter<Message<?>> {
+public class AxonMessageMapExtractor implements TextMapPropagator.Getter<Message<?>> {
     @Override
     public Iterable<String> keys(Message<?> message) {
         return message.getMetaData().keySet();

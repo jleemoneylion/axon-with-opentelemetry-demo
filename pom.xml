@@ -21,6 +21,7 @@
         <newrelic.version>6.4.1</newrelic.version>
         <opentelemetry-exporters-newrelic.version>0.13.1</opentelemetry-exporters-newrelic.version>
         <newrelic-telemetry.version>0.11.0</newrelic-telemetry.version>
+        <aws.version>2.15.81</aws.version>
     </properties>
     <dependencies>
         <dependency>
@@ -84,6 +85,10 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sqs</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -100,6 +105,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>

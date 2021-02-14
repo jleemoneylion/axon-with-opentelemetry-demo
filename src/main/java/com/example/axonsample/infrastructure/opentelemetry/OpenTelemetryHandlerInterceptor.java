@@ -26,7 +26,7 @@ public class OpenTelemetryHandlerInterceptor implements MessageHandlerIntercepto
         Message<?> message = unitOfWork.getMessage();
         String operationName = "handle_" + OpenTelemetryUtils.messageName(message);
 
-        Context extractedContext = contextPropagators.getTextMapPropagator().extract(Context.current(), message, new MapExtractor());
+        Context extractedContext = contextPropagators.getTextMapPropagator().extract(Context.current(), message, new AxonMessageMapExtractor());
 
         try (Scope ignored = extractedContext.makeCurrent()) {
             SpanBuilder spanBuilder = tracer.spanBuilder(operationName)
