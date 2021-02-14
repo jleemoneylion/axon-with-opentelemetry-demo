@@ -17,7 +17,7 @@ public class OpenTelemetryUtils {
             return message.getPayloadType().getSimpleName();
     }
 
-    private static String messageName(Class<?> payloadType, String name) {
+    public static String messageName(Class<?> payloadType, String name) {
         if (!payloadType.getName().equalsIgnoreCase(name))
             return name;
         return payloadType.getSimpleName();

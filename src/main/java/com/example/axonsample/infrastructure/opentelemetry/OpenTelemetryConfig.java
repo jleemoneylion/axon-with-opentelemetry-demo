@@ -10,6 +10,8 @@ import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.config.EventProcessingConfigurer;
 import org.axonframework.messaging.correlation.CorrelationDataProvider;
+import org.axonframework.queryhandling.QueryBus;
+import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +31,6 @@ public class OpenTelemetryConfig {
 
     @Bean
     public BatchSpanProcessor spanProcessor(@Value("${newrelic.api-key}") String apiKey) {
-        System.out.println("API_KEY = " + apiKey);
         return BatchSpanProcessor.builder(NewRelicSpanExporter.newBuilder()
                 .apiKey(apiKey)
                 .enableAuditLogging()
@@ -61,6 +62,11 @@ public class OpenTelemetryConfig {
     @Bean
     public CorrelationDataProvider openTelemetryCorrelationDataProvider(ContextPropagators contextPropagators) {
         return new OpenTelemetryCorrelationDataProvider(contextPropagators);
+    }
+
+    @Bean
+    public QueryGateway openTelemetryQueryGateway(Tracer tracer, QueryBus queryBus) {
+        return new OpenTelemetryQueryGateway(tracer, queryBus);
     }
 
     @Autowired

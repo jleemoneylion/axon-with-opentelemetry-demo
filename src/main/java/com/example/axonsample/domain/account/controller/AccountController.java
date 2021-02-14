@@ -4,7 +4,9 @@ import com.example.axonsample.domain.account.command.CreateAccount;
 import com.example.axonsample.domain.account.command.DepositMoney;
 import com.example.axonsample.domain.account.command.WithdrawMoney;
 import com.example.axonsample.domain.account.exception.AccountException;
+import com.example.axonsample.domain.account.query.dto.GetAccountBalanceQuery;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +18,21 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/accounts")
 public class AccountController {
     private final CommandGateway commandGateway;
+    private final QueryGateway queryGateway;
 
-    public AccountController(CommandGateway commandGateway) {
+    public AccountController(CommandGateway commandGateway,
+                             QueryGateway queryGateway) {
         this.commandGateway = commandGateway;
+        this.queryGateway = queryGateway;
+    }
+
+    @GetMapping("/{accountId}/current-balance")
+    public CompletableFuture<ResponseEntity<BigDecimal>> getCurrentBalance(@PathVariable String accountId) {
+        return queryGateway.query(GetAccountBalanceQuery.builder()
+                .accountId(accountId)
+                .build(), BigDecimal.class)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(this::createErrorResponse);
     }
 
     @PostMapping("/{accountId}")
@@ -56,7 +70,7 @@ public class AccountController {
                 .exceptionally(this::createErrorResponse);
     }
 
-    private ResponseEntity<Object> createErrorResponse(Throwable e) {
+    private <T> ResponseEntity<T> createErrorResponse(Throwable e) {
         if (e instanceof AccountException)
             return ResponseEntity.badRequest().build();
 
