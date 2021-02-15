@@ -5,7 +5,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,17 +27,20 @@ public class SQSOpenTelemetry {
     private static final String STRING_DATA_TYPE = "String";
     private static final ObjectMapper objectMapper = ObjectMapperUtils.instance();
 
+    private final Tracer tracer;
     private final ContextPropagators contextPropagators;
     private final String attributeKey;
 
-    public SQSOpenTelemetry(ContextPropagators contextPropagators,
+    public SQSOpenTelemetry(Tracer tracer,
+                            ContextPropagators contextPropagators,
                             String attributeKey) {
+        this.tracer = tracer;
         this.contextPropagators = contextPropagators;
         this.attributeKey = attributeKey;
     }
 
-    public SQSOpenTelemetry(ContextPropagators contextPropagators) {
-        this(contextPropagators, SPAN_CONTEXT_ATTRIBUTE_KEY);
+    public SQSOpenTelemetry(Tracer tracer, ContextPropagators contextPropagators) {
+        this(tracer, contextPropagators, SPAN_CONTEXT_ATTRIBUTE_KEY);
     }
 
     public SendMessageRequest injectInto(SendMessageRequest request) {
@@ -88,6 +94,27 @@ public class SQSOpenTelemetry {
 
                     return Optional.empty();
                 })));
+    }
+
+    public void consumeWithContext(Context context,
+                                   String queueName,
+                                   Runnable runnable) {
+        if (context == null) {
+            runnable.run();
+            return;
+        }
+
+        Span span = null;
+
+        try (Scope ignored = context.makeCurrent()) {
+            SpanBuilder spanBuilder = tracer.spanBuilder(queueName + " receive")
+                    .setSpanKind(Span.Kind.CONSUMER);
+            span = spanBuilder.startSpan();
+            runnable.run();
+        } finally {
+            if (span != null)
+                span.end();
+        }
     }
 
     private <T> Map<String, T> flattenMap(Map<String, Optional<T>> mapWithOptionals) {

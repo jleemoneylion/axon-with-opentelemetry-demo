@@ -1,5 +1,6 @@
-package com.example.axonsample.domain.account.listener.largetransaction;
+package com.example.axonsample.domain.account.producer.largetransaction;
 
+import com.example.axonsample.domain.account.dto.LargeTransactionNotification;
 import com.example.axonsample.domain.account.event.MoneyDeposited;
 import com.example.axonsample.domain.account.event.MoneyWithdrawn;
 import com.example.axonsample.infrastructure.objectmapper.ObjectMapperUtils;
@@ -30,21 +31,31 @@ public class LargeTransactionNotificationPublisher {
                                                  @Value("${name.sqs-queue.large-transaction-notification}") String largeTransactionNotificationQueueName,
                                                  SQSOpenTelemetry sqsOpenTelemetry) {
         this.sqsClient = sqsClient;
-        this.largeTransactionNotificationQueueUrl = urlPrefix + largeTransactionNotificationQueueName;
         this.sqsOpenTelemetry = sqsOpenTelemetry;
+        this.largeTransactionNotificationQueueUrl = urlPrefix + largeTransactionNotificationQueueName;
         this.objectMapper = ObjectMapperUtils.instance();
     }
 
     @EventHandler
     public void on(MoneyDeposited evt) {
         if (evt.getAmount().compareTo(BigDecimal.valueOf(1000)) > 0)
-            publishNotification(evt);
+            publishNotification(LargeTransactionNotification.builder()
+                    .accountId(evt.getAccountId())
+                    .transactionId(evt.getTransactionId())
+                    .amount(evt.getAmount())
+                    .timestamp(evt.getTimestamp())
+                    .build());
     }
 
     @EventHandler
     public void on(MoneyWithdrawn evt) {
         if (evt.getAmount().compareTo(BigDecimal.valueOf(1000)) > 0)
-            publishNotification(evt);
+            publishNotification(LargeTransactionNotification.builder()
+                    .accountId(evt.getAccountId())
+                    .transactionId(evt.getTransactionId())
+                    .amount(evt.getAmount().negate())
+                    .timestamp(evt.getTimestamp())
+                    .build());
     }
 
     private void publishNotification(Object evt) {

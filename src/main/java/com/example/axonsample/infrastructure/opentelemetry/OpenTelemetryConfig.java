@@ -77,7 +77,7 @@ public class OpenTelemetryConfig {
     }
 
     @Bean
-    public SQSOpenTelemetry sqsOpenTelemetry(ContextPropagators contextPropagators) {
-        return new SQSOpenTelemetry(contextPropagators);
+    public SQSOpenTelemetry sqsOpenTelemetry(Tracer tracer, ContextPropagators contextPropagators) {
+        return new SQSOpenTelemetry(tracer, contextPropagators);
     }
 }

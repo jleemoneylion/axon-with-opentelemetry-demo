@@ -5,12 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
-import software.amazon.awssdk.services.sqs.model.CreateQueueResponse;
-import software.amazon.awssdk.services.sqs.model.ListQueuesRequest;
-import software.amazon.awssdk.services.sqs.model.ListQueuesResponse;
+import software.amazon.awssdk.services.sqs.model.*;
 
 import javax.annotation.PostConstruct;
+import java.util.Map;
 
 @Component
 public class SQSInitializationBean {
@@ -38,6 +36,7 @@ public class SQSInitializationBean {
         } else {
             CreateQueueRequest createQueueRequest = CreateQueueRequest.builder()
                     .queueName(largeTransactionNotificationQueueName)
+                    .attributes(Map.of(QueueAttributeName.RECEIVE_MESSAGE_WAIT_TIME_SECONDS, "20"))
                     .build();
             CreateQueueResponse createQueueResponse = sqsClient.createQueue(createQueueRequest);
             logger.info("new queue url = {}", createQueueResponse.queueUrl());
